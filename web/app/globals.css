@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@theme {
+  /* Espresso ground — warm near-blacks */
+  --color-ground: #14100c;
+  --color-ground-2: #1b1510;
+  --color-ground-3: #241c14;
+  --color-ground-4: #2e2419;
+  --color-line: #3a2b1c;
+  --color-line-soft: #2a2017;
+
+  /* Steam & crema — text + accent */
+  --color-cream: #f4ead8;
+  --color-cream-dim: #bcae95;
+  --color-cream-faint: #8a7c67;
+  --color-crema: #e8a04c;
+  --color-crema-soft: #f5cd8e;
+  --color-copper: #b07a45;
+
+  /* Semantic */
+  --color-olive: #96a570;
+  --color-rust: #c85e44;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-geist), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  --animate-brew-pulse: brew-pulse 2.6s ease-in-out infinite;
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade: fade 0.4s ease-out both;
+  --animate-swirl: swirl 22s linear infinite;
+  --animate-steam: steam 4.5s ease-in-out infinite;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line-soft);
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    background-image:
+      radial-gradient(1200px 700px at 50% -10%, rgba(232, 160, 76, 0.07), transparent 60%),
+      radial-gradient(900px 600px at 100% 110%, rgba(176, 122, 69, 0.05), transparent 55%);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: var(--color-crema);
+    color: var(--color-ground);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 999px;
+    border: 2px solid var(--color-ground);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Subtle film grain over the whole app */
+  .grain {
+    position: relative;
+  }
+  .grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .crema-text {
+    background: linear-gradient(120deg, #f5cd8e, #e8a04c 55%, #b07a45);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hairline {
+    box-shadow: inset 0 1px 0 0 var(--color-line-soft);
+  }
+}
+
+@keyframes brew-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes swirl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes steam {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(4px) scaleX(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-6px) scaleX(1.15);
+  }
+}
