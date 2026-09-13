@@ -1,0 +1,113 @@
+[project]
+name = "nine-bars"
+version = "0.1.0"
+description = "9Bars — a Strands Agents assistant for dialing in espresso on Gaggiuino/GaggiMate machines"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Ayoub Briki", email = "ayoub.briki@gmail.com" },
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "strands-agents>=1.0.0",
+    "duckdb>=1.2.0",
+    "httpx>=0.28.0",
+    "websockets>=17.1",
+    "openai>=3.13.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.0",
+    "mypy>=1.15.0",
+    "pytest>=8.3.0",
+    "import-linter>=2.2",
+]
+
+[project.scripts]
+nine-bars = "nine_bars.main:main"
+nine-bars-demo = "nine_bars.demo:main"
+
+[build-system]
+requires = ["uv_build>=0.9.0,<0.10.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple/"
+default = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "SIM",   # flake8-simplify
+    "C4",    # flake8-comprehensions
+    "RUF",   # ruff-specific rules
+    "N",     # pep8-naming
+]
+ignore = [
+    "E501",  # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["nine_bars"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+packages = ["nine_bars"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.importlinter]
+root_packages = ["nine_bars"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+type = "forbidden"
+name = "Domain layer stays pure: no framework, I/O, or adapter imports"
+source_modules = ["nine_bars.domain"]
+forbidden_modules = [
+    "nine_bars.adapters",
+    "nine_bars.agent",
+    "fastapi",
+    "strands",
+    "httpx",
+    "duckdb",
+]
+
+[[tool.importlinter.contracts]]
+type = "forbidden"
+name = "SQL (DuckDB) stays inside adapters"
+source_modules = ["nine_bars.application", "nine_bars.agent"]
+forbidden_modules = ["duckdb"]
+
+[[tool.importlinter.contracts]]
+type = "forbidden"
+name = "API layer must not reach into agent internals"
+source_modules = ["nine_bars.api"]
+forbidden_modules = ["nine_bars.agent"]
+
+[[tool.importlinter.contracts]]
+type = "forbidden"
+name = "Research layer stays free of SQL and upward dependencies"
+source_modules = ["nine_bars.research"]
+forbidden_modules = ["duckdb", "nine_bars.agent", "nine_bars.api"]

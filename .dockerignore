@@ -1,0 +1,43 @@
+# Version control
+.git/
+.gitignore
+.github/
+
+# uv: the lock file is never committed and must not enter the build context
+# (it may embed a private PyPI index URL).
+uv.lock
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Data (DuckDB)
+data/
+*.duckdb
+*.duckdb.wal
+
+# Local-only agent reference docs
+AGENTS.md
+ROADMAP.md
+SPECS.md
+
+# Tooling not needed in the image
+Makefile
+tests/
+
+# Web (Node) build artifacts — the UI is rebuilt inside the image
+web/node_modules/
+web/.next/
+web/out/
