@@ -52,6 +52,8 @@ COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app src ./src
 COPY --from=web --chown=app:app /web/out ./web/out
 
+RUN mkdir -p /app/data && chown app:app /app/data
+
 USER app
 
 EXPOSE 9009
