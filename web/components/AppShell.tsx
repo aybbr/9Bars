@@ -20,11 +20,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-line-soft bg-ground/85 backdrop-blur-md">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-baseline gap-1.5">
-            <span className="font-display text-2xl leading-none text-cream">
-              <span className="crema-text">9</span>Bars
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/ui/logo-badge.png" alt="9Bars" className="h-9 w-9 shrink-0" />
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-display text-2xl leading-none text-cream">
+                <span className="crema-text">9</span>Bars
+              </span>
+              <span className="hidden text-[11px] uppercase tracking-[0.2em] text-cream-faint sm:inline">dial-in</span>
             </span>
-            <span className="hidden text-[11px] uppercase tracking-[0.2em] text-cream-faint sm:inline">dial-in</span>
           </Link>
           <div className="flex items-center gap-1 sm:gap-2">
             {LINKS.map((link) => (
