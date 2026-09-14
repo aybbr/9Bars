@@ -20,7 +20,6 @@ import json
 import logging
 import time
 from collections.abc import AsyncIterator
-from dataclasses import asdict
 from typing import Any, cast
 
 from fastapi import APIRouter, HTTPException, Request
@@ -134,7 +133,15 @@ async def agent_activity(request: Request) -> dict[str, object]:
     """Return the latest tool spans plus the current agent mode."""
     activity = cast(AgentActivityBuffer, request.app.state.activity)
     return {
-        "spans": [asdict(span) for span in activity.snapshot()],
+        "spans": [
+            {
+                "tool_name": span.tool_name,
+                "input_summary": span.input_summary,
+                "output_summary": span.output_summary,
+                "duration_ms": span.duration_ms,
+            }
+            for span in activity.snapshot()
+        ],
         "mode": "live" if get_settings().deepseek_api_key else "demo",
     }
 
@@ -244,7 +251,8 @@ async def _chat_stream(
         duration_ms = round((time.perf_counter() - started) * 1000)
         yield _sse({"type": "tool_result", "name": tool_name, "output": output_summary})
         activity.record(SpanRecord(tool_name, input_summary, output_summary, duration_ms))
-        artifact = _artifact_event(tool_name, kwargs, output) if isinstance(output, dict) else None
+        artifact_output = demo_coffee_dict() if tool_name == "research_coffee" else output
+        artifact = _artifact_event(tool_name, kwargs, artifact_output) if isinstance(artifact_output, dict) else None
         if artifact is not None:
             yield _sse(artifact)
 
@@ -300,8 +308,7 @@ def _artifact_event(tool_name: str, input: dict[str, object], output: object) ->
     """Build the rich artifact SSE payload for a tool, or ``None`` if not a rich tool."""
     if tool_name not in _ARTIFACT_TOOLS:
         return None
-    artifact_output = demo_coffee_dict() if tool_name == "research_coffee" else output
-    return {"type": "artifact", "kind": tool_name, "input": input, "output": artifact_output}
+    return {"type": "artifact", "kind": tool_name, "input": input, "output": output}
 
 
 def _live_artifact(span: SpanRecord) -> dict[str, object] | None:
@@ -309,21 +316,21 @@ def _live_artifact(span: SpanRecord) -> dict[str, object] | None:
 
     The rating request carries its ``shot_id`` (from the tool input) and
     ``coffee_id`` (from the tool result); the other rich tools are reconstructed
-    from their JSON tool-result text when available.
+    from their full JSON tool input/output, never the truncated summaries.
     """
     if span.tool_name == _RATE_TOOL:
-        input = _json_dict(span.input_summary)
-        output = _json_dict(span.output_summary)
+        input = _json_dict(span.input_json)
+        output = _json_dict(span.output_json)
         return {
             "type": "artifact",
             "kind": _RATE_ARTIFACT,
             "input": {"shot_id": input.get("shot_id"), "coffee_id": output.get("coffee_id")},
             "output": {},
         }
-    output = _json_dict(span.output_summary)
+    output = _json_dict(span.output_json)
     if not output:
         return None
-    return _artifact_event(span.tool_name, _json_dict(span.input_summary), output)
+    return _artifact_event(span.tool_name, _json_dict(span.input_json), output)
 
 
 def _json_dict(text: str) -> dict[str, object]:

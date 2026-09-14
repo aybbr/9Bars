@@ -1,5 +1,7 @@
 """Tests for agent activity span extraction and the ring buffer."""
 
+import json
+
 from strands.telemetry import Trace
 
 from nine_bars.agent.activity import AgentActivityBuffer, SpanRecord, extract_spans
@@ -55,3 +57,30 @@ def test_buffer_to_json() -> None:
     buffer.record(SpanRecord("analyze_shot", "i", "o", 1))
 
     assert '"tool_name": "analyze_shot"' in buffer.to_json()
+
+
+def test_extract_spans_preserves_full_json_for_long_input() -> None:
+    long_input = {"name": "long", "rationale": "word " * 60}
+    spans = extract_spans([_tool_cycle("draft_profile", "t1", long_input, '{"draft_id": "d"}')])
+
+    span = spans[0]
+    assert len(span.input_json) > 200
+    assert json.loads(span.input_json)["name"] == "long"
+    assert span.input_summary.endswith("…")
+
+
+def test_extract_spans_preserves_full_json_for_long_output() -> None:
+    long_output = '{"channeling_explanation": "' + ("word " * 60) + '"}'
+    spans = extract_spans([_tool_cycle("analyze_shot", "t1", {"shot_id": "1"}, long_output)])
+
+    span = spans[0]
+    assert json.loads(span.output_json)["channeling_explanation"]
+    assert span.output_summary.endswith("…")
+
+
+def test_to_json_omits_full_json_fields() -> None:
+    buffer = AgentActivityBuffer()
+    buffer.record(SpanRecord("draft_profile", "i", "o", 1, input_json='{"a": 1}', output_json='{"b": 2}'))
+
+    assert "input_json" not in buffer.to_json()
+    assert "output_json" not in buffer.to_json()
