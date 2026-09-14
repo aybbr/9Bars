@@ -106,11 +106,17 @@ _DEMO_STEPS: list[dict[str, Any]] = [
 
 
 class ChatRequest(BaseModel):
-    """The user prompt for the agent chat, with an optional bag photo."""
+    """The user prompt for the agent chat, with an optional bag photo.
+
+    ``demo`` forces the deterministic offline scripted arc regardless of whether
+    a live model key is configured, so the "view demo" entry point never runs
+    the live agent by accident.
+    """
 
     prompt: str
     image: str | None = None
     session_id: str | None = None
+    demo: bool = False
 
 
 @router.post("/agent/chat")
@@ -123,7 +129,7 @@ async def agent_chat(body: ChatRequest, request: Request) -> StreamingResponse:
     activity = cast(AgentActivityBuffer, request.app.state.activity)
     agents = cast(dict[str, Any], request.app.state.agents)
     return StreamingResponse(
-        _chat_stream(deps, activity, get_settings(), prompt, body.image, agents, body.session_id),
+        _chat_stream(deps, activity, get_settings(), prompt, body.image, agents, body.session_id, body.demo),
         media_type="text/event-stream",
     )
 
@@ -188,9 +194,10 @@ async def _chat_stream(
     image: str | None = None,
     agents: dict[str, Any] | None = None,
     session_id: str | None = None,
+    demo: bool = False,
 ) -> AsyncIterator[str]:
-    logger.info("agent chat: mode=%s", "live" if settings.deepseek_api_key else "demo")
-    if settings.deepseek_api_key:
+    logger.info("agent chat: mode=%s", "demo" if demo or not settings.deepseek_api_key else "live")
+    if settings.deepseek_api_key and not demo:
         yield _sse({"type": "start", "mode": "live"})
         agent = _get_agent(agents, session_id, deps, settings)
         prompt_arg: Any = prompt

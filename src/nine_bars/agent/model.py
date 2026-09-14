@@ -28,6 +28,8 @@ def build_model(settings: Settings) -> Model:
         client_args={
             "base_url": settings.deepseek_base_url,
             "api_key": settings.deepseek_api_key,
+            "timeout": 60.0,
+            "max_retries": 1,
         },
         # DeepSeek enables chain-of-thought by default; strands does not round-trip
         # `reasoning_content` across tool-call turns, which breaks the agent loop.

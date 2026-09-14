@@ -116,7 +116,7 @@ export function useChat() {
   }, []);
 
   const send = useCallback(
-    async (prompt: string, image?: string) => {
+    async (prompt: string, image?: string, demo = false) => {
       const userBlocks: Block[] = image
         ? [{ type: "image", dataUrl: image }, { type: "text", text: prompt }]
         : [{ type: "text", text: prompt }];
@@ -147,7 +147,7 @@ export function useChat() {
         const res = await fetch("/api/agent/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, image: image ?? undefined, session_id: activeId }),
+          body: JSON.stringify({ prompt, image: image ?? undefined, session_id: activeId, demo }),
           signal: controller.signal,
         });
         if (!res.ok || !res.body) throw new Error("no stream");

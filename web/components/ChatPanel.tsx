@@ -24,7 +24,7 @@ export function ChatPanel() {
 
   function runDemo() {
     reset();
-    void send("Walk me through dialing in this coffee.");
+    void send("Walk me through dialing in this coffee.", undefined, true);
   }
 
   function fillPrompt(prompt: string) {
